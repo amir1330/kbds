@@ -20,11 +20,13 @@ async def submit_build_request(
     if not summary and "layers" in payload.plate_spec:
         summary = _fallback_summary(payload.plate_spec)
 
+    contact_val = payload.contact or payload.email or payload.name or ""
     record = BuildRequest(
-        name=payload.name,
-        email=payload.email,
+        name=payload.name or "",
+        email=str(payload.email) if payload.email else "",
+        contact=contact_val,
         phone=payload.phone,
-        preferences=payload.preferences,
+        preferences=payload.preferences or "",
         description=payload.description,
         layout_json=payload.layout,
         plate_spec_json=payload.plate_spec,
@@ -37,13 +39,14 @@ async def submit_build_request(
     await send_telegram_message(
         format_build_request_notification(
             record.id,
-            payload.name,
-            payload.email,
-            payload.phone,
-            payload.preferences,
+            contact_val,
             payload.description,
             summary,
             payload.plate_spec,
+            payload.name,
+            str(payload.email) if payload.email else None,
+            payload.phone,
+            payload.preferences,
         )
     )
 

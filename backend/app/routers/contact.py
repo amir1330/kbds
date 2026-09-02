@@ -16,16 +16,19 @@ async def submit_contact(
     payload: ContactCreate,
     session: Annotated[Session, Depends(get_session)],
 ) -> dict:
+    # legacy name/email -> contact fallback
+    contact_val = payload.contact or payload.email or payload.name or ""
     submission = ContactSubmission(
-        name=payload.name,
-        email=payload.email,
+        name=payload.name or "",
+        email=str(payload.email) if payload.email else "",
+        contact=contact_val,
         message=payload.message,
     )
     session.add(submission)
     session.commit()
 
     await send_telegram_message(
-        format_contact_notification(payload.name, payload.email, payload.message)
+        format_contact_notification(contact_val, payload.message, payload.name, payload.email)
     )
 
     return {"ok": True}

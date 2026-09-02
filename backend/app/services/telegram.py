@@ -34,34 +34,36 @@ def format_order_notification(order_id: int, name: str, email: str, total_cents:
     return "\n".join(lines)
 
 
-def format_contact_notification(name: str, email: str, message: str) -> str:
-    return "\n".join(
-        [
-            "<b>Contact form</b>",
-            f"Name: {name}",
-            f"Email: {email}",
-            "",
-            message,
-        ]
-    )
+def format_contact_notification(contact: str, message: str, legacy_name: str | None = None, legacy_email: str | None = None) -> str:
+    lines = ["<b>Contact form</b>", f"Contact: {contact}"]
+    if legacy_name and legacy_name != contact:
+        lines.append(f"Name: {legacy_name}")
+    if legacy_email and legacy_email != contact:
+        lines.append(f"Email: {legacy_email}")
+    lines.extend(["", message])
+    return "\n".join(lines)
 
 
 def format_build_request_notification(
     request_id: int,
-    name: str,
-    email: str,
-    phone: str | None,
-    preferences: str,
+    contact: str,
     description: str,
     plate_summary: str,
     plate_spec: dict,
+    legacy_name: str | None = None,
+    legacy_email: str | None = None,
+    phone: str | None = None,
+    preferences: str | None = None,
 ) -> str:
     lines = [
         "<b>🔧 Build request</b>",
         f"ID: #{request_id}",
-        f"Name: {name}",
-        f"Email: {email}",
+        f"Contact: {contact}",
     ]
+    if legacy_name and legacy_name != contact:
+        lines.append(f"Name: {legacy_name}")
+    if legacy_email and legacy_email != contact:
+        lines.append(f"Email: {legacy_email}")
     if phone:
         lines.append(f"Phone: {phone}")
     if preferences:

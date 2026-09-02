@@ -32,10 +32,22 @@ def _migrate_product_i18n() -> None:
             conn.execute(text("ALTER TABLE product ADD COLUMN description2_i18n JSON"))
 
 
+def _migrate_contact_build_request() -> None:
+    inspector = inspect(engine)
+    for table, col in [("buildrequest", "contact"), ("contactsubmission", "contact")]:
+        if table not in inspector.get_table_names():
+            continue
+        cols = {c["name"] for c in inspector.get_columns(table)}
+        if col not in cols:
+            with engine.begin() as conn:
+                conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {col} VARCHAR"))
+
+
 def init_db() -> None:
     SQLModel.metadata.create_all(engine)
     _migrate_product_image_paths()
     _migrate_product_i18n()
+    _migrate_contact_build_request()
 
 
 def get_session() -> Generator[Session, None, None]:

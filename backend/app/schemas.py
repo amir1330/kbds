@@ -88,9 +88,11 @@ class OrderCreate(BaseModel):
 
 
 class ContactCreate(BaseModel):
-    name: str
-    email: EmailStr
+    contact: str
     message: str
+    # legacy compat
+    name: str | None = None
+    email: EmailStr | None = None
 
 
 class LoginRequest(BaseModel):
@@ -99,13 +101,15 @@ class LoginRequest(BaseModel):
 
 
 class BuildRequestCreate(BaseModel):
-    name: str
-    email: EmailStr
-    phone: str | None = None
-    preferences: str = ""
+    contact: str
     description: str
     layout: dict[str, Any]
     plate_spec: dict[str, Any]
+    # legacy compat
+    name: str | None = None
+    email: EmailStr | None = None
+    phone: str | None = None
+    preferences: str | None = None
 
 
 class TokenResponse(BaseModel):

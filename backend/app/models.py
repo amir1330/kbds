@@ -42,8 +42,9 @@ class Order(SQLModel, table=True):
 
 class ContactSubmission(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    name: str
-    email: str
+    name: str = Field(default="")
+    email: str = Field(default="")
+    contact: str | None = Field(default=None)
     message: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -71,8 +72,9 @@ class LayoutPreset(SQLModel, table=True):
 
 class BuildRequest(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    name: str
-    email: str
+    name: str = Field(default="")
+    email: str = Field(default="")
+    contact: str | None = Field(default=None)
     phone: str | None = None
     preferences: str = ""
     description: str

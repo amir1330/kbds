@@ -9,13 +9,11 @@
 	import { t } from '$lib/i18n';
 
 	let layout = $state<BuildLayout | null>(null);
-	let name = $state('');
-	let email = $state('');
-	let phone = $state('');
-	let preferences = $state('');
+	let contact = $state('');
 	let description = $state('');
 	let submitting = $state(false);
 	let success = $state(false);
+	let successContact = $state('');
 	let errorMsg = $state('');
 
 	onMount(() => {
@@ -42,10 +40,7 @@
 		const plate = exportPlate(layout);
 		try {
 			await api.submitBuildRequest({
-				name,
-				email,
-				phone: phone || undefined,
-				preferences,
+				contact,
 				description,
 				layout: plate.layout,
 				plate_spec: {
@@ -59,6 +54,7 @@
 					plate_json: plate.plate_json
 				}
 			});
+			successContact = contact;
 			success = true;
 			clearLayoutDraft();
 		} catch (err) {
@@ -78,13 +74,25 @@
 
 	{#if success}
 		<div class="graybox p-6 text-sm text-success">
-			{$t('request.requestSent', { email })}
+			{#if successContact}
+				{$t('request.requestSent', { contact: successContact })}
+			{:else}
+				{$t('request.requestSentFallback')}
+			{/if}
+		</div>
+		<div class="mt-3 graybox p-4 text-xs text-muted leading-relaxed">
+			<p>{$t('request.waitNotice')}</p>
+			<p class="mt-1 text-dim">{$t('request.deliveryNote')}</p>
 		</div>
 		<div class="mt-4">
 			<Button href="/" label={$t('common.backToStore')} variant="ghost" />
 		</div>
 	{:else if layout}
-		<div class="mb-8 grid gap-4 lg:grid-cols-[1fr_280px]">
+		<div class="mb-4 graybox p-4 text-xs text-muted leading-relaxed">
+			<p>{$t('request.waitNotice')}</p>
+			<p class="mt-1 text-dim">{$t('request.deliveryNote')}</p>
+		</div>
+		<div class="mb-8 grid gap-4">
 			<div class="graybox p-4">
 				<div class="mb-3 flex flex-wrap items-center justify-between gap-2">
 					<div>
@@ -97,41 +105,19 @@
 				</div>
 				<div class="preview-wrap overflow-x-auto">{@html previewSvg}</div>
 			</div>
-
-			<div class="graybox p-4 text-xs text-muted leading-relaxed">
-				<p class="label mb-2">{$t('request.whatWeReceive')}</p>
-				<ul class="list-disc space-y-1 pl-4">
-					<li>{$t('request.receive1')}</li>
-					<li>{$t('request.receive2')}</li>
-					<li>{$t('request.receive3')}</li>
-					<li>{$t('request.receive4')}</li>
-				</ul>
-			</div>
 		</div>
 
 		<form class="graybox max-w-xl space-y-4 p-5" onsubmit={handleSubmit}>
-			<div class="grid gap-4 sm:grid-cols-2">
-				<div>
-					<label class="label" for="req-name">{$t('common.name')}</label>
-					<input id="req-name" class="input" bind:value={name} required />
-				</div>
-				<div>
-					<label class="label" for="req-email">{$t('common.email')}</label>
-					<input id="req-email" class="input" type="email" bind:value={email} required />
-				</div>
-			</div>
 			<div>
-				<label class="label" for="req-phone">{$t('request.phoneOptional')}</label>
-				<input id="req-phone" class="input" bind:value={phone} />
-			</div>
-			<div>
-				<label class="label" for="req-prefs">{$t('request.prefsLabel')}</label>
+				<label class="label" for="req-contact">{$t('request.detailsContactLabel')}</label>
 				<input
-					id="req-prefs"
+					id="req-contact"
 					class="input"
-					placeholder={$t('request.prefsPlaceholder')}
-					bind:value={preferences}
+					placeholder={$t('request.detailsContactPlaceholder')}
+					bind:value={contact}
+					required
 				/>
+				<p class="mt-1 text-[10px] text-dim">whatsapp / telegram / email</p>
 			</div>
 			<div>
 				<label class="label" for="req-desc">{$t('request.describeBuild')}</label>

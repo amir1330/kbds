@@ -51,8 +51,9 @@
 	</div>
 
 	{#if orderSuccess}
-		<div class="border-b border-border-subtle bg-box px-4 py-3 text-xs text-success">
-			{$t('cart.orderSuccess')}
+		<div class="border-b border-border-subtle bg-box px-4 py-3 text-xs leading-relaxed text-success">
+			<p>{$t('cart.orderSuccess')}</p>
+			<p class="mt-1 text-[10px] text-dim">{$t('cart.whereOrderGoes')}</p>
 		</div>
 	{/if}
 
@@ -107,9 +108,13 @@
 	</div>
 
 	<div class="border-t border-border-subtle p-4">
-		<div class="mb-4 flex justify-between text-xs">
+		<div class="mb-3 flex justify-between text-xs">
 			<span class="text-dim">{$t('common.total')}</span>
 			<span class="tabular-nums text-bright">{formatPrice($cart.total_cents)}</span>
+		</div>
+		<div class="mb-3 graybox p-3 text-[10px] leading-relaxed text-muted">
+			<p>{$t('cart.deliveryNote')}</p>
+			<p class="mt-1 text-dim">{$t('cart.waitNotice')}</p>
 		</div>
 
 		{#if checkoutOpen}

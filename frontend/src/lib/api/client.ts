@@ -55,9 +55,11 @@ export interface Cart {
 }
 
 export interface ContactPayload {
-	name: string;
-	email: string;
+	contact: string;
 	message: string;
+	// legacy
+	name?: string;
+	email?: string;
 }
 
 export interface OrderPayload {
