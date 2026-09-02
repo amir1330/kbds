@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, EmailStr
@@ -165,3 +166,37 @@ class LayoutPresetUpdate(BaseModel):
     layout_json: dict[str, Any] | None = None
     enabled: bool | None = None
     sort_order: int | None = None
+
+
+class OrderRead(BaseModel):
+    id: int
+    email: str
+    name: str
+    phone: str | None = None
+    notes: str | None = None
+    items_json: list[dict[str, Any]]
+    total_cents: int
+    created_at: datetime
+
+
+class ContactRead(BaseModel):
+    id: int
+    name: str
+    email: str
+    contact: str | None = None
+    message: str
+    created_at: datetime
+
+
+class BuildRequestRead(BaseModel):
+    id: int
+    name: str
+    email: str
+    contact: str | None = None
+    phone: str | None = None
+    preferences: str
+    description: str
+    layout_json: dict[str, Any]
+    plate_spec_json: dict[str, Any]
+    plate_summary: str
+    created_at: datetime

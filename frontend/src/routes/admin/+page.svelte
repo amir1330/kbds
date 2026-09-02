@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { api, type Product } from '$lib/api/client';
+	import { api, type Product, type OrderRead, type ContactRead, type BuildRequestRead } from '$lib/api/client';
 	import { formatPrice } from '$lib/api/client';
 	import Button from '$lib/components/Button.svelte';
 	import LayoutAdminPanel from '$lib/components/admin/LayoutAdminPanel.svelte';
@@ -10,8 +10,11 @@
 	let password = $state('');
 	let loginError = $state('');
 	let products = $state<Product[]>([]);
+	let orders = $state<OrderRead[]>([]);
+	let contacts = $state<ContactRead[]>([]);
+	let buildRequests = $state<BuildRequestRead[]>([]);
 	let loading = $state(false);
-	let tab = $state<'products' | 'layout' | 'requests' | 'contacts'>('products');
+	let tab = $state<'products' | 'orders' | 'layout' | 'requests' | 'contacts'>('products');
 
 	type ProductsView = 'list' | 'form';
 	let productsView = $state<ProductsView>('list');
@@ -60,6 +63,40 @@
 		} finally {
 			loading = false;
 		}
+	}
+
+	async function loadOrders() {
+		loading = true;
+		try {
+			orders = await api.admin.getOrders(token);
+		} finally {
+			loading = false;
+		}
+	}
+	async function loadContacts() {
+		loading = true;
+		try {
+			contacts = await api.admin.getContacts(token);
+		} finally {
+			loading = false;
+		}
+	}
+	async function loadBuildRequests() {
+		loading = true;
+		try {
+			buildRequests = await api.admin.getBuildRequests(token);
+		} finally {
+			loading = false;
+		}
+	}
+
+	function handleTab(next: typeof tab) {
+		tab = next;
+		if (!authenticated) return;
+		if (next === 'orders') loadOrders();
+		if (next === 'contacts') loadContacts();
+		if (next === 'requests') loadBuildRequests();
+		if (next === 'products') loadProducts();
 	}
 
 	function resetForm() {
@@ -211,6 +248,7 @@
 			token = stored;
 			authenticated = true;
 			loadProducts();
+			// preload orders count etc could be done lazily on tab
 		}
 	});
 </script>
@@ -243,23 +281,23 @@
 					type="button"
 					class="pill"
 					class:pill-active={tab === 'products'}
-					onclick={() => (tab = 'products')}
+					onclick={() => handleTab('products')}
 				>
 					products
 				</button>
 				<button
 					type="button"
 					class="pill"
-					class:pill-active={tab === 'layout'}
-					onclick={() => (tab = 'layout')}
+					class:pill-active={tab === 'orders'}
+					onclick={() => handleTab('orders')}
 				>
-					layout editor
+					orders
 				</button>
 				<button
 					type="button"
 					class="pill"
 					class:pill-active={tab === 'requests'}
-					onclick={() => (tab = 'requests')}
+					onclick={() => handleTab('requests')}
 				>
 					requests
 				</button>
@@ -267,22 +305,76 @@
 					type="button"
 					class="pill"
 					class:pill-active={tab === 'contacts'}
-					onclick={() => (tab = 'contacts')}
+					onclick={() => handleTab('contacts')}
 				>
 					contacts
+				</button>
+				<button
+					type="button"
+					class="pill"
+					class:pill-active={tab === 'layout'}
+					onclick={() => handleTab('layout')}
+				>
+					layout editor
 				</button>
 			</div>
 		</div>
 
 		{#if tab === 'layout'}
 			<LayoutAdminPanel {token} />
+		{:else if tab === 'orders'}
+			<div class="space-y-3">
+				<p class="text-xs text-dim">{loading ? 'loading…' : `${orders.length} orders`}</p>
+				{#each orders as o (o.id)}
+					<div class="graybox p-4 text-xs">
+						<div class="flex flex-wrap justify-between gap-2">
+							<span class="font-bold text-bright">#{o.id} — {formatPrice(o.total_cents)}</span>
+							<span class="text-dim">{new Date(o.created_at).toLocaleString()}</span>
+						</div>
+						<p class="mt-1 text-muted">{o.name} · {o.email}{o.phone ? ` · ${o.phone}` : ''}</p>
+						{#if o.notes}<p class="mt-1 text-muted">notes: {o.notes}</p>{/if}
+						<ul class="mt-2 list-disc pl-4 text-muted">
+							{#each o.items_json as it}
+								<li>{it.name} × {it.quantity} — {formatPrice(it.price_cents)}</li>
+							{/each}
+						</ul>
+					</div>
+				{:else}
+					<p class="graybox p-8 text-center text-xs text-muted">{loading ? 'loading…' : 'No orders yet. Purchases from cart appear here and via Telegram if configured.'}</p>
+				{/each}
+			</div>
 		{:else if tab === 'requests'}
-			<div class="graybox p-8 text-center text-xs text-muted">
-				Build requests view coming soon.
+			<div class="space-y-3">
+				<p class="text-xs text-dim">{loading ? 'loading…' : `${buildRequests.length} build requests`}</p>
+				{#each buildRequests as r (r.id)}
+					<div class="graybox p-4 text-xs">
+						<div class="flex flex-wrap justify-between gap-2">
+							<span class="font-bold text-bright">#{r.id}</span>
+							<span class="text-dim">{new Date(r.created_at).toLocaleString()}</span>
+						</div>
+						<p class="mt-1 text-muted">contact: {r.contact ?? r.email ?? r.name} {r.phone ? `· ${r.phone}` : ''}</p>
+						{#if r.preferences}<p class="text-muted">prefs: {r.preferences}</p>{/if}
+						<p class="mt-2 text-bright">{r.description}</p>
+						<p class="mt-1 text-dim">plate: {r.plate_summary}</p>
+					</div>
+				{:else}
+					<p class="graybox p-8 text-center text-xs text-muted">{loading ? 'loading…' : 'No build requests yet.'}</p>
+				{/each}
 			</div>
 		{:else if tab === 'contacts'}
-			<div class="graybox p-8 text-center text-xs text-muted">
-				Contact submissions view coming soon.
+			<div class="space-y-3">
+				<p class="text-xs text-dim">{loading ? 'loading…' : `${contacts.length} contacts`}</p>
+				{#each contacts as c (c.id)}
+					<div class="graybox p-4 text-xs">
+						<div class="flex flex-wrap justify-between gap-2">
+							<span class="font-bold text-bright">#{c.id} — {c.contact ?? c.email ?? c.name}</span>
+							<span class="text-dim">{new Date(c.created_at).toLocaleString()}</span>
+						</div>
+						<p class="mt-2 text-muted">{c.message}</p>
+					</div>
+				{:else}
+					<p class="graybox p-8 text-center text-xs text-muted">{loading ? 'loading…' : 'No contact submissions yet.'}</p>
+				{/each}
 			</div>
 		{:else if productsView === 'list'}
 			<div class="list-header">

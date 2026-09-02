@@ -89,6 +89,40 @@ export interface LayoutPresetMeta {
 	sort_order: number;
 }
 
+export interface OrderRead {
+	id: number;
+	email: string;
+	name: string;
+	phone: string | null;
+	notes: string | null;
+	items_json: Record<string, unknown>[];
+	total_cents: number;
+	created_at: string;
+}
+
+export interface ContactRead {
+	id: number;
+	name: string;
+	email: string;
+	contact: string | null;
+	message: string;
+	created_at: string;
+}
+
+export interface BuildRequestRead {
+	id: number;
+	name: string;
+	email: string;
+	contact: string | null;
+	phone: string | null;
+	preferences: string;
+	description: string;
+	layout_json: Record<string, unknown>;
+	plate_spec_json: Record<string, unknown>;
+	plate_summary: string;
+	created_at: string;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 	const res = await fetch(`${API_BASE}${path}`, {
 		...options,
@@ -249,6 +283,18 @@ export const api = {
 		deleteLayoutPreset: (token: string, id: number) =>
 			request<void>(`/admin/layout-presets/${id}`, {
 				method: 'DELETE',
+				headers: { Authorization: `Bearer ${token}` }
+			}),
+		getOrders: (token: string) =>
+			request<OrderRead[]>('/admin/orders', {
+				headers: { Authorization: `Bearer ${token}` }
+			}),
+		getContacts: (token: string) =>
+			request<ContactRead[]>('/admin/contacts', {
+				headers: { Authorization: `Bearer ${token}` }
+			}),
+		getBuildRequests: (token: string) =>
+			request<BuildRequestRead[]>('/admin/build-requests', {
 				headers: { Authorization: `Bearer ${token}` }
 			})
 	}

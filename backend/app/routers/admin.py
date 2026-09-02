@@ -11,13 +11,16 @@ from sqlmodel import Session, select
 from app.auth import get_current_admin
 from app.config import settings
 from app.database import get_session
-from app.models import EditorSettings, LayoutPreset, Product
+from app.models import BuildRequest, ContactSubmission, EditorSettings, LayoutPreset, Order, Product
 from app.schemas import (
+    BuildRequestRead,
+    ContactRead,
     EditorSettingsRead,
     EditorSettingsUpdate,
     LayoutPresetCreate,
     LayoutPresetRead,
     LayoutPresetUpdate,
+    OrderRead,
     ProductCreate,
     ProductRead,
     ProductUpdate,
@@ -342,6 +345,30 @@ def delete_layout_preset(
         raise HTTPException(status_code=404, detail="Preset not found")
     session.delete(preset)
     session.commit()
+
+
+@router.get("/orders", response_model=list[OrderRead])
+def admin_list_orders(
+    _: Annotated[str, Depends(get_current_admin)],
+    session: Annotated[Session, Depends(get_session)],
+) -> list[Order]:
+    return session.exec(select(Order).order_by(Order.created_at.desc())).all()
+
+
+@router.get("/contacts", response_model=list[ContactRead])
+def admin_list_contacts(
+    _: Annotated[str, Depends(get_current_admin)],
+    session: Annotated[Session, Depends(get_session)],
+) -> list[ContactSubmission]:
+    return session.exec(select(ContactSubmission).order_by(ContactSubmission.created_at.desc())).all()
+
+
+@router.get("/build-requests", response_model=list[BuildRequestRead])
+def admin_list_build_requests(
+    _: Annotated[str, Depends(get_current_admin)],
+    session: Annotated[Session, Depends(get_session)],
+) -> list[BuildRequest]:
+    return session.exec(select(BuildRequest).order_by(BuildRequest.created_at.desc())).all()
 
 
 @files_router.get("/firmware/{product_id}")
