@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: kbds
+      POSTGRES_PASSWORD: kbds
+      POSTGRES_DB: kbds
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kbds"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    environment:
+      DATABASE_URL: postgresql://kbds:kbds@postgres:5432/kbds
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: dev-secret
+      ADMIN_USERNAME: admin
+      ADMIN_PASSWORD: admin
+      CORS_ORIGINS: http://localhost:5173,http://localhost:3001,http://127.0.0.1:3001
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      ORIGIN: http://127.0.0.1:3001
+      API_URL: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  redis_data:
+  uploads_data:
+  frontend_node_modules:

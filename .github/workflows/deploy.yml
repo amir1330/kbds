@@ -1,0 +1,90 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# least privilege at workflow level
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        include:
+          - service: frontend
+            context: ./frontend
+            image: kbds-frontend
+          - service: backend
+            context: ./backend
+            image: kbds-backend
+    steps:
+      - uses: actions/checkout@v4 # pin: 11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: docker/setup-buildx-action@v3 # pin: b5ca514318bd6eb657b01bff380eb1e23944da98
+      - uses: docker/login-action@v3 # pin: 74a5d142397b8f367a37354183257988dff6cd93
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6 # pin: 9a1b8d28079ab0e23d63f97b5ab2ff0f029951c8
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: |
+            ghcr.io/amir1330/${{ matrix.image }}:latest
+            ghcr.io/amir1330/${{ matrix.image }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: kbds-prod
+      cancel-in-progress: false
+    # deploy only after successful build on main
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://customkbds.abuyunus.cc
+    steps:
+      - uses: actions/checkout@v4
+      - name: Sync and recreate over restricted SSH
+        env:
+          HOST: ${{ secrets.HOST }}
+          USERNAME: ${{ secrets.USERNAME }}
+          SSH_KEY: ${{ secrets.SSH_KEY }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GHCR_USER: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          # validate secrets present
+          : "${HOST:?HOST secret missing}"
+          : "${USERNAME:?USERNAME secret missing}"
+          : "${SSH_KEY:?SSH_KEY secret missing}"
+          install -m 600 /dev/null "${RUNNER_TEMP}/deploy_key"
+          printf '%s\n' "$SSH_KEY" > "${RUNNER_TEMP}/deploy_key"
+          chmod 600 "${RUNNER_TEMP}/deploy_key"
+          trap 'shred -u "${RUNNER_TEMP}/deploy_key" 2>/dev/null || rm -f "${RUNNER_TEMP}/deploy_key"' EXIT
+          {
+            printf '%s\n' "$GHCR_USER"
+            printf '%s\n' "$GHCR_TOKEN"
+            tar czf - docker-compose.prod.yml deploy/remote.sh deploy/ci-entry.sh
+          } | ssh -i "${RUNNER_TEMP}/deploy_key" \
+            -o IdentitiesOnly=yes \
+            -o UserKnownHostsFile=.github/known_hosts \
+            -o StrictHostKeyChecking=yes \
+            -o BatchMode=yes \
+            -o ConnectTimeout=15 \
+            -o ServerAliveInterval=15 \
+            "${USERNAME}@${HOST}" sync-deploy

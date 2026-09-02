@@ -1,0 +1,87 @@
+name: kbds
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kbds}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kbds}
+      POSTGRES_DB: ${POSTGRES_DB:-kbds}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kbds}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+
+  backend:
+    image: ghcr.io/amir1330/kbds-backend:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-kbds}:${POSTGRES_PASSWORD:-kbds}@postgres:5432/${POSTGRES_DB:-kbds}
+      REDIS_URL: redis://redis:6379/0
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=web
+      - traefik.http.routers.kbds-api.rule=Host(`${DOMAIN}`) && PathPrefix(`/api`)
+      - traefik.http.routers.kbds-api.entrypoints=websecure
+      - traefik.http.routers.kbds-api.tls=true
+      - traefik.http.routers.kbds-api.priority=100
+      - traefik.http.services.kbds-api.loadbalancer.server.port=8000
+
+  frontend:
+    image: ghcr.io/amir1330/kbds-frontend:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      ORIGIN: https://${DOMAIN}
+      API_URL: http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=web
+      - traefik.http.routers.kbds-web.rule=Host(`${DOMAIN}`)
+      - traefik.http.routers.kbds-web.entrypoints=websecure
+      - traefik.http.routers.kbds-web.tls=true
+      - traefik.http.routers.kbds-web.priority=10
+      - traefik.http.services.kbds-web.loadbalancer.server.port=3000
+
+networks:
+  web:
+    external: true
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: kbds_postgres_data
+  redis_data:
+    name: kbds_redis_data
+  uploads_data:
+    name: kbds_uploads_data

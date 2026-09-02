@@ -1,0 +1,121 @@
+services:
+  traefik:
+    image: traefik:v3.2
+    restart: unless-stopped
+    command:
+      - --api.dashboard=false
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL:-admin@example.com}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_letsencrypt:/letsencrypt
+    networks:
+      - web
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kbds}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kbds}
+      POSTGRES_DB: ${POSTGRES_DB:-kbds}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kbds}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-kbds}:${POSTGRES_PASSWORD:-kbds}@postgres:5432/${POSTGRES_DB:-kbds}
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-me}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+      TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:3001,http://localhost}
+      UPLOAD_DIR: /app/uploads
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kbds-api.rule=Host(`${DOMAIN:-localhost}`) && PathPrefix(`/api`)
+      - traefik.http.routers.kbds-api.entrypoints=websecure
+      - traefik.http.routers.kbds-api.tls.certresolver=letsencrypt
+      - traefik.http.services.kbds-api.loadbalancer.server.port=8000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      ORIGIN: https://${DOMAIN:-localhost}
+      API_URL: http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - web
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.kbds-web.rule=Host(`${DOMAIN:-localhost}`)
+      - traefik.http.routers.kbds-web.entrypoints=websecure
+      - traefik.http.routers.kbds-web.tls.certresolver=letsencrypt
+      - traefik.http.services.kbds-web.loadbalancer.server.port=3000
+
+networks:
+  web:
+    name: web
+    external: true
+  internal:
+    driver: bridge
+
+volumes:
+  postgres_data:
+    name: kbds_postgres_data
+  redis_data:
+    name: kbds_redis_data
+  uploads_data:
+    name: kbds_uploads_data
+  traefik_letsencrypt:

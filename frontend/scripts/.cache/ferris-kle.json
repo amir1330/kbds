@@ -1,0 +1,485 @@
+[
+  {
+    "name": "Keymap",
+    "author": "Max Petretta, maxp.co"
+  },
+  [
+    {
+      "f": 6,
+      "w": 12,
+      "h": 0.5,
+      "d": true
+    },
+    "Base Layer"
+  ],
+  [
+    {
+      "y": -0.25,
+      "p": "CHICKLET",
+      "a": 7,
+      "f": 5
+    },
+    "Q",
+    "W",
+    "F",
+    "P",
+    "B",
+    {
+      "x": 2
+    },
+    "J",
+    "L",
+    "U",
+    "Y",
+    {
+      "f": 6
+    },
+    "'"
+  ],
+  [
+    {
+      "y": -0.75,
+      "x": 1.75,
+      "f": 4,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "@",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "{",
+    {
+      "x": 5.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "}",
+    {
+      "x": 0.5,
+      "f": 5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "\""
+  ],
+  [
+    {
+      "y": -0.25
+    },
+    "A\n\n\n\nshift",
+    "R\n\n\n\nctrl",
+    "S\n\n\n\nopt",
+    {
+      "n": true
+    },
+    "T\n\n\n\ncmd",
+    "G",
+    {
+      "x": 2
+    },
+    "M",
+    {
+      "n": true
+    },
+    "N\n\n\n\ncmd",
+    "E\n\n\n\nopt",
+    "I\n\n\n\nctrl",
+    "O\n\n\n\nshift"
+  ],
+  [
+    {
+      "y": -0.7000000000000002,
+      "x": 0.75,
+      "f": 4,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "`",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    ":",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "(",
+    {
+      "x": 5.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    ")",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "-",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "+"
+  ],
+  [
+    {
+      "y": -0.2999999999999998,
+      "f": 5
+    },
+    "Z",
+    "X",
+    "C",
+    "D",
+    "V",
+    {
+      "x": 2
+    },
+    "K",
+    "H",
+    {
+      "f": 6
+    },
+    ",",
+    ".",
+    {
+      "f": 5
+    },
+    "/"
+  ],
+  [
+    {
+      "y": -0.75,
+      "x": 0.75,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "~",
+    {
+      "x": 0.5,
+      "f": 4,
+      "w": 0.5,
+      "h": 0.5
+    },
+    ";",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "[",
+    {
+      "x": 5.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "]",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "_",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "?"
+  ],
+  [
+    {
+      "x": 2.5,
+      "f": 6
+    },
+    "<i class='mss mss-Unicode-Escape-3'></i>",
+    {
+      "c": "#73a0ec"
+    },
+    "&#9251;\n\n\n\nnav",
+    {
+      "c": "#cccccc"
+    },
+    "<i class='kb kb-Tab-1'></i>",
+    {
+      "x": 1
+    },
+    "<i class='kb kb-Return-2'></i>",
+    {
+      "c": "#ff6188"
+    },
+    "<i class='mss mss-Unicode-BackSpace-DeleteLeft-Big-2'></i>\n\n\n\nnum",
+    {
+      "c": "#cccccc"
+    },
+    "<i class='mss mss-Unicode-DeleteRight-Big-2'></i>"
+  ],
+  [
+    {
+      "y": 0.75,
+      "a": 4,
+      "w": 12,
+      "h": 0.5,
+      "d": true
+    },
+    "Navigation Layer"
+  ],
+  [
+    {
+      "y": -0.25,
+      "a": 7,
+      "f": 5
+    },
+    "<i class='mss mss-Unicode-Command-3'></i>1",
+    "<i class='mss mss-Unicode-Command-3'></i>2",
+    "<i class='mss mss-Unicode-Command-3'></i>3",
+    "<i class='mss mss-Unicode-Command-3'></i>4",
+    "<i class='mss mss-Unicode-Command-3'></i>5",
+    {
+      "x": 2
+    },
+    "⇪",
+    "<i class='kb kb-Arrows-Top-2'></i>",
+    "<i class='mss mss-Unicode-Page-Down-5'></i>",
+    "<i class='mss mss-Unicode-Page-Up-5'></i>",
+    "<i class='kb kb-Arrows-Bottom-2'></i>"
+  ],
+  [
+    "⇧",
+    "&#8963;",
+    "<i class='mss mss-Unicode-Option-3'></i>",
+    {
+      "n": true
+    },
+    "<i class='mss mss-Unicode-Command-3'></i>",
+    "<i class='fa fa-clipboard'></i>",
+    {
+      "x": 2
+    },
+    "<i class='fa fa-camera'></i>",
+    {
+      "f": 6,
+      "n": true
+    },
+    "<i class='kb kb-Arrows-Left'></i>",
+    "<i class='kb kb-Arrows-Down'></i>",
+    "<i class='kb kb-Arrows-Up'></i>",
+    "<i class='kb kb-Arrows-Right'></i>"
+  ],
+  [
+    {
+      "f": 5
+    },
+    "<i class='kb kb-Undo-3'></i>",
+    "<i class='kb kb-Scissors-2'></i>",
+    "<i class='kb kb-Unicode-Page-Up-1'></i>",
+    "<i class='kb kb-Unicode-Page-Down-1'></i>",
+    "<i class='mss mss-Redo-2'></i>",
+    {
+      "x": 2
+    },
+    "<i class='kb kb-Multimedia-Play-Pause'></i>",
+    "<i class='kb kb-Multimedia-Rewind-Start'></i>",
+    "<i class='kb kb-Multimedia-Volume-Down-2'></i>",
+    "<i class='kb kb-Multimedia-Volume-Up-2'></i>",
+    "<i class='kb kb-Multimedia-FastForward-End'></i>"
+  ],
+  [
+    {
+      "y": 0.25,
+      "x": 2.5,
+      "f": 6
+    },
+    "",
+    {
+      "c": "#73a0ec"
+    },
+    "",
+    {
+      "c": "#cccccc"
+    },
+    "",
+    {
+      "x": 1
+    },
+    "<i class='kb kb-Return-2'></i>",
+    "<i class='mss mss-Unicode-BackSpace-DeleteLeft-Big-2'></i>",
+    "<i class='mss mss-Unicode-DeleteRight-Big-2'></i>"
+  ],
+  [
+    {
+      "y": 0.75,
+      "a": 4,
+      "w": 12,
+      "h": 0.5,
+      "d": true
+    },
+    "Numpad Layer"
+  ],
+  [
+    {
+      "y": -0.34999999999999964,
+      "a": 7,
+      "f": 5
+    },
+    "<i class='fa fa-feed'></i>1",
+    "F7",
+    "F8",
+    "F9",
+    "F10",
+    {
+      "x": 2
+    },
+    "=",
+    "7",
+    "8",
+    "9",
+    "+"
+  ],
+  [
+    "<i class='fa fa-feed'></i>2",
+    "F4",
+    "F5",
+    {
+      "n": true
+    },
+    "F6",
+    "F11",
+    {
+      "x": 2
+    },
+    "*",
+    {
+      "n": true
+    },
+    "4",
+    "5",
+    "6",
+    "-"
+  ],
+  [
+    "<i class='fa fa-feed'></i>3",
+    "F1",
+    "F2",
+    "F3",
+    "F12",
+    {
+      "x": 2
+    },
+    "0",
+    "1",
+    "2",
+    "3",
+    "/"
+  ],
+  [
+    {
+      "y": 0.25,
+      "x": 2.5,
+      "f": 6
+    },
+    "<i class='mss mss-Unicode-Escape-3'></i>",
+    "&#9251;",
+    "<i class='kb kb-Tab-1'></i>",
+    {
+      "x": 1
+    },
+    "<i class='fa fa-rss'></i>CLR",
+    {
+      "c": "#ff6188"
+    },
+    "",
+    {
+      "c": "#cccccc"
+    },
+    ""
+  ],
+  [
+    {
+      "r": 0.01,
+      "y": -14.9,
+      "x": 1.25,
+      "f": 4,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "!",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "#",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "$",
+    {
+      "x": 4.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "=",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "|",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "\\"
+  ],
+  [
+    {
+      "x": 1.25,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "%",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "^",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "&",
+    {
+      "x": 4.5,
+      "f": 5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "*",
+    {
+      "x": 0.5,
+      "f": 4,
+      "w": 0.5,
+      "h": 0.5
+    },
+    "<",
+    {
+      "x": 0.5,
+      "w": 0.5,
+      "h": 0.5
+    },
+    ">"
+  ]
+]
