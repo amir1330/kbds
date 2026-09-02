@@ -78,3 +78,8 @@ backend/      FastAPI API, cart, auth, uploads
 deploy/       VPS bootstrap + remote deploy scripts
 .github/      CI/CD workflow + pinned known_hosts
 ```
+
+## License
+
+[GNU Affero General Public License v3.0](LICENSE) — Copyright (C) 2026 [amir1330](https://github.com/amir1330).
+See `LICENSE` for full text. Source: <https://github.com/amir1330/kbds>
