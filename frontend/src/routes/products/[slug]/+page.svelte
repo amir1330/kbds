@@ -1,14 +1,22 @@
 <script lang="ts">
 	import { addToCart } from '$lib/stores/cart';
-	import { formatPrice } from '$lib/i18n';
+	import { formatPrice, locale } from '$lib/i18n';
 	import KleCanvas from '$lib/components/KleCanvas.svelte';
 	import Button from '$lib/components/Button.svelte';
 	import ImageCarousel from '$lib/components/ImageCarousel.svelte';
 	import { parseKleJson } from '$lib/kle/parser';
 	import { t } from '$lib/i18n';
+	import { localizedDescription } from '$lib/api/client';
 
 	let { data } = $props();
 	const product = $derived(data.product);
+	let currentLocale = $state('en');
+	$effect(() => {
+		const unsub = locale.subscribe((v) => (currentLocale = v));
+		return unsub;
+	});
+	const localizedDesc = $derived(localizedDescription(product, currentLocale, 'description'));
+	const localizedDesc2 = $derived(localizedDescription(product, currentLocale, 'description2'));
 
 	const kleLayout = $derived(
 		product.kle_layout ? parseKleJson(product.kle_layout) : null
@@ -80,12 +88,23 @@
 		</div>
 	</section>
 
-	<section class="mb-8">
+	<section class="mb-6">
 		<h2 class="section-label">{$t('product.about')}</h2>
 		<div class="graybox p-4">
-			<p class="text-xs leading-relaxed text-muted">{product.description}</p>
+			<p class="text-xs leading-relaxed text-muted">{localizedDesc}</p>
 		</div>
 	</section>
+
+	{#if localizedDesc2}
+		<section class="mb-8">
+			<h2 class="section-label">{$t('product.about')} — 2</h2>
+			<div class="graybox p-4">
+				<p class="text-xs leading-relaxed text-muted">{localizedDesc2}</p>
+			</div>
+		</section>
+	{:else}
+		<div class="mb-8"></div>
+	{/if}
 
 	<div class="mb-10 flex flex-wrap gap-2">
 		<Button

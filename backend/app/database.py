@@ -18,9 +18,24 @@ def _migrate_product_image_paths() -> None:
             conn.execute(text("ALTER TABLE product ADD COLUMN image_paths JSON"))
 
 
+def _migrate_product_i18n() -> None:
+    inspector = inspect(engine)
+    if "product" not in inspector.get_table_names():
+        return
+    columns = {c["name"] for c in inspector.get_columns("product")}
+    with engine.begin() as conn:
+        if "description_i18n" not in columns:
+            conn.execute(text("ALTER TABLE product ADD COLUMN description_i18n JSON"))
+        if "description2" not in columns:
+            conn.execute(text("ALTER TABLE product ADD COLUMN description2 VARCHAR"))
+        if "description2_i18n" not in columns:
+            conn.execute(text("ALTER TABLE product ADD COLUMN description2_i18n JSON"))
+
+
 def init_db() -> None:
     SQLModel.metadata.create_all(engine)
     _migrate_product_image_paths()
+    _migrate_product_i18n()
 
 
 def get_session() -> Generator[Session, None, None]:

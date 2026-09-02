@@ -17,11 +17,17 @@
 	let productsView = $state<ProductsView>('list');
 	let editing = $state<Product | null>(null);
 
+	let descLocale = $state<'en' | 'ru' | 'kz'>('en');
+	let desc2Locale = $state<'en' | 'ru' | 'kz'>('en');
+
 	let form = $state({
 		name: '',
 		slug: '',
 		tagline: '',
 		description: '',
+		description_i18n: { en: '', ru: '', kz: '' } as Record<string, string>,
+		description2: '',
+		description2_i18n: { en: '', ru: '', kz: '' } as Record<string, string>,
 		price_cents: 0,
 		switches: '',
 		microcontroller: '',
@@ -63,6 +69,9 @@
 			slug: '',
 			tagline: '',
 			description: '',
+			description_i18n: { en: '', ru: '', kz: '' },
+			description2: '',
+			description2_i18n: { en: '', ru: '', kz: '' },
 			price_cents: 0,
 			switches: '',
 			microcontroller: '',
@@ -95,6 +104,17 @@
 			slug: product.slug,
 			tagline: product.tagline,
 			description: product.description,
+			description_i18n: {
+				en: product.description_i18n?.en ?? product.description ?? '',
+				ru: product.description_i18n?.ru ?? '',
+				kz: product.description_i18n?.kz ?? ''
+			},
+			description2: product.description2 ?? '',
+			description2_i18n: {
+				en: product.description2_i18n?.en ?? product.description2 ?? '',
+				ru: product.description2_i18n?.ru ?? '',
+				kz: product.description2_i18n?.kz ?? ''
+			},
 			price_cents: product.price_cents,
 			switches: product.switches,
 			microcontroller: product.microcontroller,
@@ -108,11 +128,18 @@
 
 	async function saveProduct(e: Event) {
 		e.preventDefault();
+		// keep legacy description in sync with EN
+		if (!form.description && form.description_i18n.en) form.description = form.description_i18n.en;
+		if (form.description_i18n.en && !form.description) form.description = form.description_i18n.en;
+		if (form.description2_i18n.en && !form.description2) form.description2 = form.description2_i18n.en;
 		const payload = {
 			...form,
+			description_i18n: { ...form.description_i18n },
+			description2_i18n: { ...form.description2_i18n },
 			price_cents: Number(form.price_cents),
 			trackball: form.trackball || null
 		};
+		// normalize empty i18n to null if all empty (optional)
 		if (editing) {
 			editing = await api.admin.updateProduct(token, editing.id, payload);
 		} else {
@@ -350,9 +377,40 @@
 						<label class="label" for="tagline">tagline</label>
 						<input id="tagline" class="input" bind:value={form.tagline} required />
 					</div>
-					<div>
-						<label class="label" for="description">description</label>
-						<textarea id="description" class="input min-h-24" bind:value={form.description} required></textarea>
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<label class="label">description</label>
+							<div class="flex gap-1">
+								{#each ['en','ru','kz'] as loc}
+									<button type="button" class="pill text-[10px] px-2 py-0.5" class:pill-active={descLocale===loc} onclick={() => (descLocale = loc as any)}>{loc.toUpperCase()}</button>
+								{/each}
+							</div>
+						</div>
+						{#if descLocale==='en'}
+							<textarea class="input min-h-24" bind:value={form.description_i18n.en} required placeholder="description EN"></textarea>
+						{:else if descLocale==='ru'}
+							<textarea class="input min-h-24" bind:value={form.description_i18n.ru} placeholder="описание RU"></textarea>
+						{:else}
+							<textarea class="input min-h-24" bind:value={form.description_i18n.kz} placeholder="сипаттама KZ"></textarea>
+						{/if}
+						<input type="hidden" bind:value={form.description} />
+					</div>
+					<div class="space-y-2">
+						<div class="flex items-center justify-between">
+							<label class="label">description 2</label>
+							<div class="flex gap-1">
+								{#each ['en','ru','kz'] as loc}
+									<button type="button" class="pill text-[10px] px-2 py-0.5" class:pill-active={desc2Locale===loc} onclick={() => (desc2Locale = loc as any)}>{loc.toUpperCase()}</button>
+								{/each}
+							</div>
+						</div>
+						{#if desc2Locale==='en'}
+							<textarea class="input min-h-24" bind:value={form.description2_i18n.en} placeholder="secondary description EN (optional)"></textarea>
+						{:else if desc2Locale==='ru'}
+							<textarea class="input min-h-24" bind:value={form.description2_i18n.ru} placeholder="второе описание RU"></textarea>
+						{:else}
+							<textarea class="input min-h-24" bind:value={form.description2_i18n.kz} placeholder="екінші сипаттама KZ"></textarea>
+						{/if}
 					</div>
 					<div class="form-row">
 						<div>

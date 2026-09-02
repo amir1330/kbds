@@ -9,6 +9,9 @@ class ProductRead(BaseModel):
     name: str
     tagline: str
     description: str
+    description_i18n: dict[str, str] | None = None
+    description2: str | None = None
+    description2_i18n: dict[str, str] | None = None
     price_cents: int
     image_url: str
     image_urls: list[str] = []
@@ -28,6 +31,9 @@ class ProductCreate(BaseModel):
     name: str
     tagline: str
     description: str
+    description_i18n: dict[str, str] | None = None
+    description2: str | None = None
+    description2_i18n: dict[str, str] | None = None
     price_cents: int
     image_url: str = ""
     switches: str
@@ -44,6 +50,9 @@ class ProductUpdate(BaseModel):
     name: str | None = None
     tagline: str | None = None
     description: str | None = None
+    description_i18n: dict[str, str] | None = None
+    description2: str | None = None
+    description2_i18n: dict[str, str] | None = None
     price_cents: int | None = None
     image_url: str | None = None
     switches: str | None = None

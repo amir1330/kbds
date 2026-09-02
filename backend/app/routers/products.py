@@ -14,12 +14,22 @@ SESSION_COOKIE = "kbds_session"
 
 
 def product_to_read(product: Product) -> ProductRead:
+    # fallback i18n from legacy description if not set
+    desc_i18n = product.description_i18n
+    if not desc_i18n and product.description:
+        desc_i18n = {"en": product.description}
+    desc2_i18n = product.description2_i18n
+    if not desc2_i18n and product.description2:
+        desc2_i18n = {"en": product.description2}
     return ProductRead(
         id=product.id,
         slug=product.slug,
         name=product.name,
         tagline=product.tagline,
         description=product.description,
+        description_i18n=desc_i18n,
+        description2=product.description2,
+        description2_i18n=desc2_i18n,
         price_cents=product.price_cents,
         image_url=primary_image_url(product),
         image_urls=product_image_urls(product),

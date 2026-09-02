@@ -10,6 +10,9 @@ class Product(SQLModel, table=True):
     name: str
     tagline: str
     description: str
+    description_i18n: dict[str, str] | None = Field(default=None, sa_column=Column(JSON))
+    description2: str | None = Field(default=None)
+    description2_i18n: dict[str, str] | None = Field(default=None, sa_column=Column(JSON))
     price_cents: int
     image_url: str = ""
     image_paths: list[str] = Field(default_factory=list, sa_column=Column(JSON))

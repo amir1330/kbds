@@ -6,6 +6,9 @@ export interface Product {
 	name: string;
 	tagline: string;
 	description: string;
+	description_i18n?: Record<string, string> | null;
+	description2?: string | null;
+	description2_i18n?: Record<string, string> | null;
 	price_cents: number;
 	image_url: string;
 	image_urls: string[];
@@ -18,6 +21,21 @@ export interface Product {
 	kle_layout: Record<string, unknown> | null;
 	in_stock: boolean;
 	featured: boolean;
+}
+
+export function localizedDescription(
+	product: Product,
+	locale: string,
+	field: 'description' | 'description2' = 'description'
+): string {
+	const key = field === 'description' ? 'description_i18n' : 'description2_i18n';
+	const i18n = product[key] as Record<string, string> | null | undefined;
+	if (i18n && i18n[locale]) return i18n[locale];
+	if (i18n && i18n.en) return i18n.en;
+	const fallback = product[field] as string | null | undefined;
+	if (fallback) return fallback;
+	// legacy fallback for description2 empty
+	return '';
 }
 
 export interface CartItem {
