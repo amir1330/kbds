@@ -15,10 +15,11 @@ printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "${GHCR_USER:-amir1330}" --p
 docker network inspect web >/dev/null 2>&1 || docker network create web >/dev/null
 if docker compose version >/dev/null 2>&1; then DC="docker compose"; else DC="docker-compose"; fi
 export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-kbds}"
-# Pull with retry, recreate only app services (postgres/redis keep data)
+# Pull with retry (only app images, infra uses public images)
 $DC -f docker-compose.prod.yml pull backend frontend
 docker logout ghcr.io >/dev/null 2>&1 || true
-$DC -f docker-compose.prod.yml up -d backend frontend
+# Bring up entire stack (postgres, redis, app) - ensures infra is initialized
+$DC -f docker-compose.prod.yml up -d
 # Wait for health
 sleep 5
 $DC -f docker-compose.prod.yml ps
