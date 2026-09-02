@@ -47,6 +47,7 @@ export CORS_ORIGINS="${CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173
 export SECRET_KEY="${SECRET_KEY:-dev-secret}"
 export ADMIN_USERNAME="${ADMIN_USERNAME:-admin}"
 export ADMIN_PASSWORD="${ADMIN_PASSWORD:-admin}"
+export SEED_SAMPLE_PRODUCTS="${SEED_SAMPLE_PRODUCTS:-true}"
 
 uvicorn app.main:app --reload --host 127.0.0.1 --port 8001 &
 echo $! > "$BACKEND_PID_FILE"

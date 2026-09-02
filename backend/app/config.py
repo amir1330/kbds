@@ -18,6 +18,8 @@ class Settings(BaseSettings):
     upload_dir: str = "uploads"
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:3001,http://127.0.0.1:3001"
 
+    seed_sample_products: bool = False
+
     @property
     def cors_origin_list(self) -> list[str]:
         return [o.strip() for o in self.cors_origins.split(",") if o.strip()]

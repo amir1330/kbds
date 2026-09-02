@@ -34,7 +34,8 @@ app.include_router(files_router, prefix="/api")
 def on_startup() -> None:
     os.makedirs(settings.upload_dir, exist_ok=True)
     init_db()
-    seed_products()
+    if settings.seed_sample_products:
+        seed_products()
     seed_layout_data()
 
 
