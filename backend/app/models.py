@@ -1,4 +1,6 @@
+import uuid
 from datetime import datetime
+from enum import Enum
 from typing import Any
 
 from sqlmodel import Field, SQLModel, Column, JSON
@@ -82,3 +84,52 @@ class BuildRequest(SQLModel, table=True):
     plate_spec_json: dict[str, Any] = Field(sa_column=Column(JSON))
     plate_summary: str = ""
     created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+# ── Keyboard / Product listing — AGPL spec ──
+
+
+class KeyboardStatus(str, Enum):
+    IN_STOCK = "IN_STOCK"
+    MADE_TO_ORDER = "MADE_TO_ORDER"
+    PREORDER = "PREORDER"
+    OUT_OF_STOCK = "OUT_OF_STOCK"
+
+
+class Connectivity(str, Enum):
+    BLUETOOTH = "BLUETOOTH"
+    WIRED = "WIRED"
+    RECEIVER_2_4GHZ = "RECEIVER_2_4GHZ"
+
+
+class Keyboard(SQLModel, table=True):
+    """Custom/ergonomic keyboard listing — see spec section 1."""
+
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    name: str
+    slug: str = Field(index=True, unique=True)
+    tagline: str = Field(default="")
+    short_description: str = Field(default="")
+    description: str = Field(default="")  # Markdown
+
+    price_cents: int = Field(default=0, ge=0)
+    status: KeyboardStatus = Field(default=KeyboardStatus.MADE_TO_ORDER)
+    featured: bool = Field(default=False)
+    images: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    github_url: str | None = Field(default=None)
+
+    # Specs / Metadata
+    firmware: str | None = Field(default=None)
+    microcontroller: str | None = Field(default=None)
+    connectivity: list[str] = Field(default_factory=list, sa_column=Column(JSON))  # Connectivity values
+    layout_type: str | None = Field(default=None)
+    switches: str | None = Field(default=None)
+    keycaps: str | None = Field(default=None)
+    case_material: str | None = Field(default=None)
+    hotswap: bool = Field(default=True)
+    trackball: bool = Field(default=False)
+    battery: str | None = Field(default=None)
+    weight_grams: int | None = Field(default=None)
+
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)

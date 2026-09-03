@@ -5,9 +5,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import init_db
-from app.routers import admin, auth, build_requests, cart, contact, layout_config, orders, products
+from app.routers import admin, auth, build_requests, cart, contact, keyboards, layout_config, orders, products
 from app.routers.admin import files_router
-from app.seed import seed_layout_data, seed_products
+from app.seed import seed_keyboards, seed_layout_data, seed_products
 
 app = FastAPI(title="kbds.split API", version="1.0.0")
 
@@ -20,6 +20,7 @@ app.add_middleware(
 )
 
 app.include_router(products.router, prefix="/api")
+app.include_router(keyboards.router, prefix="/api")
 app.include_router(cart.router, prefix="/api")
 app.include_router(orders.router, prefix="/api")
 app.include_router(contact.router, prefix="/api")
@@ -36,6 +37,7 @@ def on_startup() -> None:
     init_db()
     if settings.seed_sample_products:
         seed_products()
+    seed_keyboards()
     seed_layout_data()
 
 

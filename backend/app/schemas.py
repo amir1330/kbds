@@ -1,7 +1,9 @@
+import re
 from datetime import datetime
-from typing import Any
+from enum import Enum
+from typing import Any, Literal
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class ProductRead(BaseModel):
@@ -200,3 +202,146 @@ class BuildRequestRead(BaseModel):
     plate_spec_json: dict[str, Any]
     plate_summary: str
     created_at: datetime
+
+
+# ── Keyboard / AGPL spec ──
+
+SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+
+
+class KeyboardStatus(str, Enum):
+    IN_STOCK = "IN_STOCK"
+    MADE_TO_ORDER = "MADE_TO_ORDER"
+    PREORDER = "PREORDER"
+    OUT_OF_STOCK = "OUT_OF_STOCK"
+
+
+Connectivity = Literal["BLUETOOTH", "WIRED", "RECEIVER_2_4GHZ"]
+
+
+class KeyboardRead(BaseModel):
+    id: str
+    name: str
+    slug: str
+    tagline: str
+    short_description: str
+    description: str
+    price_cents: int
+    status: KeyboardStatus
+    featured: bool
+    images: list[str]
+    github_url: str | None = None
+    firmware: str | None = None
+    microcontroller: str | None = None
+    connectivity: list[Connectivity] = Field(default_factory=list)
+    layout_type: str | None = None
+    switches: str | None = None
+    keycaps: str | None = None
+    case_material: str | None = None
+    hotswap: bool = True
+    trackball: bool = False
+    battery: str | None = None
+    weight_grams: int | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class CreateKeyboardInput(BaseModel):
+    """POST /api/keyboards — Admin only"""
+
+    name: str = Field(..., min_length=1, max_length=200)
+    slug: str = Field(..., min_length=2, max_length=120, description="URL-friendly, lower-case a-z0-9-")
+    tagline: str = Field(..., min_length=1, max_length=300)
+    short_description: str = Field(..., min_length=1, max_length=500)
+    description: str = Field(..., min_length=1, description="Markdown supported")
+    price_cents: int = Field(..., ge=0, description="Price in cents, >=0")
+    status: KeyboardStatus = Field(default=KeyboardStatus.MADE_TO_ORDER)
+    featured: bool = False
+    images: list[str] = Field(..., min_length=1, description="At least one image URL")
+    github_url: str | None = Field(default=None, max_length=500)
+    firmware: str | None = Field(default=None, max_length=100)
+    microcontroller: str | None = Field(default=None, max_length=100)
+    connectivity: list[Connectivity] = Field(default_factory=list)
+    layout_type: str | None = Field(default=None, max_length=100)
+    switches: str | None = Field(default=None, max_length=200)
+    keycaps: str | None = Field(default=None, max_length=200)
+    case_material: str | None = Field(default=None, max_length=200)
+    hotswap: bool = True
+    trackball: bool = False
+    battery: str | None = Field(default=None, max_length=100)
+    weight_grams: int | None = Field(default=None, ge=0)
+
+    @field_validator("slug")
+    @classmethod
+    def validate_slug(cls, v: str) -> str:
+        if not SLUG_RE.match(v):
+            raise ValueError("slug must be URL-friendly: lower-case a-z, 0-9 and hyphens, e.g. my-keyboard-40")
+        return v
+
+    @field_validator("images")
+    @classmethod
+    def validate_images(cls, v: list[str]) -> list[str]:
+        if not v:
+            raise ValueError("images must contain at least one URL")
+        for url in v:
+            if not url or not url.strip():
+                raise ValueError("images URLs must be non-empty strings")
+            if not (url.startswith("http://") or url.startswith("https://") or url.startswith("/")):
+                raise ValueError(f"images URL must start with http://, https:// or / — got {url!r}")
+        return v
+
+    @field_validator("github_url")
+    @classmethod
+    def validate_github_url(cls, v: str | None) -> str | None:
+        if v is None or v == "":
+            return None
+        if not (v.startswith("http://") or v.startswith("https://")):
+            raise ValueError("github_url must be a valid http(s) URL")
+        return v
+
+
+class UpdateKeyboardInput(BaseModel):
+    """PATCH /api/keyboards/:id — Admin only, all fields optional"""
+
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    slug: str | None = Field(default=None, min_length=2, max_length=120)
+    tagline: str | None = Field(default=None, min_length=1, max_length=300)
+    short_description: str | None = Field(default=None, min_length=1, max_length=500)
+    description: str | None = Field(default=None, min_length=1)
+    price_cents: int | None = Field(default=None, ge=0)
+    status: KeyboardStatus | None = None
+    featured: bool | None = None
+    images: list[str] | None = Field(default=None, min_length=1)
+    github_url: str | None = Field(default=None, max_length=500)
+    firmware: str | None = Field(default=None, max_length=100)
+    microcontroller: str | None = Field(default=None, max_length=100)
+    connectivity: list[Connectivity] | None = None
+    layout_type: str | None = Field(default=None, max_length=100)
+    switches: str | None = Field(default=None, max_length=200)
+    keycaps: str | None = Field(default=None, max_length=200)
+    case_material: str | None = Field(default=None, max_length=200)
+    hotswap: bool | None = None
+    trackball: bool | None = None
+    battery: str | None = Field(default=None, max_length=100)
+    weight_grams: int | None = Field(default=None, ge=0)
+
+    @field_validator("slug")
+    @classmethod
+    def validate_slug(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        if not SLUG_RE.match(v):
+            raise ValueError("slug must be URL-friendly: lower-case a-z, 0-9 and hyphens")
+        return v
+
+    @field_validator("images")
+    @classmethod
+    def validate_images(cls, v: list[str] | None) -> list[str] | None:
+        if v is None:
+            return v
+        if not v:
+            raise ValueError("images must contain at least one URL")
+        for url in v:
+            if not url or not url.strip():
+                raise ValueError("images URLs must be non-empty strings")
+        return v

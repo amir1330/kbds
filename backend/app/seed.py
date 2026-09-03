@@ -1,7 +1,7 @@
 from sqlmodel import Session, select
 
 from app.database import engine
-from app.models import EditorSettings, LayoutPreset, Product
+from app.models import EditorSettings, Keyboard, KeyboardStatus, LayoutPreset, Product
 
 SAMPLE_PRODUCTS = [
     {
@@ -89,6 +89,57 @@ def seed_products() -> None:
             return
         for data in SAMPLE_PRODUCTS:
             session.add(Product(**data))
+        session.commit()
+
+
+KEYBOARD_SEED = {
+    "name": "Wireless 40% Unibody Keyboard",
+    "slug": "wireless-40-unibody-keyboard",
+    "tagline": "Компактная эргономичная моноблок-клавиатура с пазл-дизайном",
+    "short_description": "Компактная эргономичная моноблок-клавиатура с пазл-дизайном — для каталога",
+    "description": """# Wireless 40% Unibody Keyboard
+
+Компактная эргономичная моноблок-клавиатура с пазл-дизайном. 40% форм-фактор, unibody корпус, оптимизирована для ZMK.
+
+- **Прошивка**: ZMK
+- **Контроллер**: nice!nano
+- **Связь**: Bluetooth + Wired
+- **Корпус**: 3D Printed PETG (White & Cyan)
+- **Кейкапы**: OEM Profile
+- **Хотсвоп**: Да
+""",
+    "price_cents": 15000,
+    "status": KeyboardStatus.MADE_TO_ORDER,
+    "featured": False,
+    "images": ["https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?w=800&q=80"],
+    "github_url": "https://github.com/amir1330/zmk-config",
+    "firmware": "ZMK",
+    "microcontroller": "nice!nano",
+    "connectivity": ["BLUETOOTH", "WIRED"],
+    "layout_type": "40% Unibody",
+    "switches": "Gateron Yellow Hot-swap",
+    "keycaps": "OEM Profile",
+    "case_material": "3D Printed PETG (White & Cyan)",
+    "hotswap": True,
+    "trackball": False,
+    "battery": "110 mAh",
+    "weight_grams": None,
+}
+
+
+def seed_keyboards() -> None:
+    """Idempotent seed for spec example — upserts by slug."""
+    with Session(engine) as session:
+        existing = session.exec(select(Keyboard).where(Keyboard.slug == KEYBOARD_SEED["slug"])).first()
+        if existing:
+            # update to keep seed in sync but don't duplicate
+            for k, v in KEYBOARD_SEED.items():
+                setattr(existing, k, v)
+            existing.updated_at = __import__("datetime").datetime.utcnow()
+            session.add(existing)
+            session.commit()
+            return
+        session.add(Keyboard(**KEYBOARD_SEED))
         session.commit()
 
 
